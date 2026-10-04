@@ -18,7 +18,7 @@ put one directory per version under `arms/`, write your tasks and hidden tests, 
 harness/bench.py          one run end to end; the interleaved, resumable schedule; CSV summary
 harness/analyze.py        medians, IQR, cost per success, bootstrap ratios, Mann-Whitney, pooled comparison
 harness/decompose.py      splits each run's cost: cache writes, re-reads of the prefix and of the history, output
-harness/plots.py          the article's charts
+harness/plots.py          the article's charts (third argument `it` renders the Italian version)
 harness/design_index.py   generates DESIGN_INDEX.md (catalog) and DESIGN_API.md (signatures) from Kotlin sources
 harness/watch.sh          waits for progress while the detached schedule runs
 prompts/tasks/T*.md       the three task specifications, identical for every version
@@ -28,7 +28,7 @@ hidden-tests/             acceptance tests copied in after each run; C/ holds th
 results/runs.json         per-run metrics: cost, tokens by model, API and tool calls, files touched, checks
 results/summary.csv       one row per run
 results/stats.json        aggregated statistics; results/decomposition.json: per-run cost split
-charts/                   the article's charts
+charts/                   the article's charts; `*_it.png` are the Italian versions
 ```
 
 ## What one run does

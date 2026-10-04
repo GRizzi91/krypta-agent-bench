@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Charts for the article (PNG sized for Medium's ~700 px column). Run with /tmp/krypta-bench/venv/bin/python.
 
-Usage: plots.py [results dir] [output dir]
+Usage: plots.py [results dir] [output dir] [en|it]
 Needs stats.json (analyze.py) and decomposition.json (decompose.py) in the results dir.
 """
 import json
@@ -17,17 +17,47 @@ import numpy as np  # noqa: E402
 RESULTS = Path(sys.argv[1]) if len(sys.argv) > 1 else Path('/tmp/krypta-bench/results')
 OUT = Path(sys.argv[2]) if len(sys.argv) > 2 else RESULTS / 'charts'
 OUT.mkdir(parents=True, exist_ok=True)
+LANG = sys.argv[3] if len(sys.argv) > 3 else 'en'
+SUFFIX = '' if LANG == 'en' else f'_{LANG}'
+TEXT = {
+    'en': {
+        'tick': {'A': 'A\nas-is', 'B': 'B\ncontext', 'C': 'C\nlean'},
+        'task': {'T1': 'T1 Sort order', 'T2': 'T2 Pinned entries', 'T3': 'T3 Password generator'},
+        'cost_title': 'Better context cut cost on every task; lean code only on T2',
+        'effects_title': 'What each change did to the median cost, with 95% intervals',
+        'effects_panels': ['Better context (B vs A)', 'Lean code (C vs B)'],
+        'no_change': 'no change',
+        'parts_title': 'Most of the bill is context, not output (mean per run)',
+        'parts': ['Writing new context to the cache', 'Re-reading the context', 'Model output'],
+    },
+    'it': {
+        'tick': {'A': "A\ncom'\u00e8", 'B': 'B\ncontesto', 'C': 'C\nsnello'},
+        'task': {'T1': 'T1 Ordinamento', 'T2': 'T2 Voci fissate', 'T3': 'T3 Generatore di password'},
+        'cost_title': 'Il contesto taglia il costo su ogni task, il codice snello solo su T2',
+        'effects_title': 'Effetto di ogni modifica sul costo mediano, con intervalli al 95%',
+        'effects_panels': ['Contesto migliore (B rispetto ad A)', 'Codice snello (C rispetto a B)'],
+        'no_change': 'nessun cambiamento',
+        'parts_title': "Il conto \u00e8 soprattutto contesto, non output (media per run)",
+        'parts': ['Scrittura del nuovo contesto in cache', 'Rilettura del contesto', 'Output del modello'],
+    },
+}[LANG]
+
+
+def money(v):
+    text = f'${v:,.2f}'
+    return text.replace('.', ',') if LANG == 'it' else text
+
+
+def number(v, decimals=1):
+    text = f'{v:.{decimals}f}'
+    return text.replace('.', ',') if LANG == 'it' else text
 
 SURFACE, INK, INK2, MUTED, GRID, AXIS = '#fcfcfb', '#0b0b0b', '#52514e', '#898781', '#e1e0d9', '#c3c2b7'
 ARMS = ['A', 'B', 'C']
 COLOR = {'A': '#2a78d6', 'B': '#eb6834', 'C': '#1baf7a'}
-TICK = {'A': 'A\nas-is', 'B': 'B\ncontext', 'C': 'C\nlean'}
 TASKS = ['T1', 'T2', 'T3']
-TASK_LABEL = {'T1': 'T1 Sort order', 'T2': 'T2 Pinned entries', 'T3': 'T3 Password generator'}
 # Parts of the bill, darkest first: one hue family so they never read as versions.
-PARTS = [('writes', 'Writing new context to the cache', '#3b3a37'),
-         ('reads', 'Re-reading the context', '#8f8d86'),
-         ('output', 'Model output', '#cfcdc4')]
+PARTS = [('writes', '#3b3a37'), ('reads', '#8f8d86'), ('output', '#cfcdc4')]
 
 plt.rcParams.update({
     'font.family': ['Helvetica Neue', 'Helvetica', 'Arial', 'DejaVu Sans'],
@@ -67,25 +97,25 @@ def cost_per_task(runs):
                        linewidths=0, zorder=3)
             med = float(np.median(costs))
             ax.hlines(med, x - 0.28, x + 0.28, color=INK, lw=2.5, zorder=4)
-            ax.text(x + 0.33, med, f'${med:.2f}', ha='left', va='center', fontsize=15, color=INK, zorder=5)
-        ax.set_xticks([0, 1.5, 3.0], [TICK[a] for a in ARMS])
+            ax.text(x + 0.33, med, money(med), ha='left', va='center', fontsize=15, color=INK, zorder=5)
+        ax.set_xticks([0, 1.5, 3.0], [TEXT['tick'][a] for a in ARMS])
         ax.set_xlim(-0.55, 3.95)
-        ax.set_title(TASK_LABEL[task], loc='left', fontsize=18, fontweight='bold', pad=12)
+        ax.set_title(TEXT['task'][task], loc='left', fontsize=18, fontweight='bold', pad=12)
     axes[0].set_ylim(0, 3.0)
     axes[0].yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.5))
-    axes[0].yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('${x:,.2f}'))
-    title(fig, 'Better context cut cost on every task; lean code only on T2')
-    fig.savefig(OUT / 'cost_per_task.png')
+    axes[0].yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: money(v)))
+    title(fig, TEXT['cost_title'])
+    fig.savefig(OUT / f'cost_per_task{SUFFIX}.png')
     plt.close(fig)
 
 
 def effects(stats):
-    pairs = [('A->B', 'B', 'Better context (B vs A)'), ('B->C', 'C', 'Lean code (C vs B)')]
+    pairs = [('A->B', 'B', TEXT['effects_panels'][0]), ('B->C', 'C', TEXT['effects_panels'][1])]
     fig, axes = plt.subplots(1, 2, figsize=(12, 6.2), dpi=200, sharey=True)
     fig.subplots_adjust(left=0.09, right=0.995, top=0.80, bottom=0.12, wspace=0.10)
     for ax, (key, arm, label) in zip(axes, pairs):
         ax.axhline(1.0, color=INK2, lw=1.5, zorder=2)
-        ax.text(0.4, 1.015, 'no change', ha='left', va='bottom', fontsize=14, color=INK2)
+        ax.text(0.4, 1.015, TEXT['no_change'], ha='left', va='bottom', fontsize=14, color=INK2)
         for i, task in enumerate(TASKS):
             eff = (stats['effects'].get(f'{key} {task}') or {}).get('cost')
             if not eff:
@@ -99,9 +129,9 @@ def effects(stats):
         ax.set_xlim(-0.5, 2.5)
         ax.set_title(label, loc='left', fontsize=18, fontweight='bold', pad=12)
     axes[0].set_ylim(0.4, 1.3)
-    axes[0].yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f'{v:.1f}×'))
-    title(fig, 'What each change did to the median cost, with 95% intervals')
-    fig.savefig(OUT / 'effects.png')
+    axes[0].yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: number(v) + '×'))
+    title(fig, TEXT['effects_title'])
+    fig.savefig(OUT / f'effects{SUFFIX}.png')
     plt.close(fig)
 
 
@@ -119,22 +149,22 @@ def cost_components(rows):
                 'output': np.mean([r['usd_output'] + r['usd_input'] for r in sel]),
             }
             bottom = 0.0
-            for key, _, color in PARTS:
+            for key, color in PARTS:
                 ax.bar(i, values[key], bottom=bottom, width=0.5, color=color, edgecolor=SURFACE, linewidth=2,
                        zorder=3)
                 bottom += values[key]
-            ax.text(i, bottom + 0.05, f'${bottom:.2f}', ha='center', va='bottom', fontsize=16, color=INK)
-        ax.set_xticks(range(3), [TICK[a] for a in ARMS])
+            ax.text(i, bottom + 0.05, money(bottom), ha='center', va='bottom', fontsize=16, color=INK)
+        ax.set_xticks(range(3), [TEXT['tick'][a] for a in ARMS])
         ax.set_xlim(-0.6, 2.6)
-        ax.set_title(TASK_LABEL[task], loc='left', fontsize=18, fontweight='bold', pad=12)
+        ax.set_title(TEXT['task'][task], loc='left', fontsize=18, fontweight='bold', pad=12)
     axes[0].set_ylim(0, 2.6)
     axes[0].yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.5))
-    axes[0].yaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('${x:,.2f}'))
-    title(fig, 'Most of the bill is context, not output (mean per run)')
-    handles = [matplotlib.patches.Patch(color=color, label=label) for _, label, color in PARTS]
+    axes[0].yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: money(v)))
+    title(fig, TEXT['parts_title'])
+    handles = [matplotlib.patches.Patch(color=color, label=label) for (_, color), label in zip(PARTS, TEXT['parts'])]
     fig.legend(handles=handles, loc='upper left', bbox_to_anchor=(0.01, 0.885), ncol=3, frameon=False, fontsize=15,
                handlelength=1.2, columnspacing=1.6)
-    fig.savefig(OUT / 'cost_components.png')
+    fig.savefig(OUT / f'cost_components{SUFFIX}.png')
     plt.close(fig)
 
 
