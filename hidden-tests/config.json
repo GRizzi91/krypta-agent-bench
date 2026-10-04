@@ -1,0 +1,53 @@
+{
+ "A": {
+  "T1": {
+   "dest": "vault/src/test/java/it/gr/krypta/vault/ui/list/HiddenSortTest.kt",
+   "gradle": ":vault:testReleaseUnitTest",
+   "test": "it.gr.krypta.vault.ui.list.HiddenSortTest"
+  },
+  "T2": {
+   "dest": "backup/src/test/java/it/gr/krypta/backup/data/HiddenPinnedBackupTest.kt",
+   "gradle": ":backup:testReleaseUnitTest",
+   "test": "it.gr.krypta.backup.data.HiddenPinnedBackupTest"
+  },
+  "T3": {
+   "dest": "vault/src/test/java/it/gr/krypta/vault/ui/editor/HiddenPasswordGeneratorTest.kt",
+   "gradle": ":vault:testReleaseUnitTest",
+   "test": "it.gr.krypta.vault.ui.editor.HiddenPasswordGeneratorTest"
+  }
+ },
+ "B": {
+  "T1": {
+   "dest": "vault/src/test/java/it/gr/krypta/vault/ui/list/HiddenSortTest.kt",
+   "gradle": ":vault:testReleaseUnitTest",
+   "test": "it.gr.krypta.vault.ui.list.HiddenSortTest"
+  },
+  "T2": {
+   "dest": "backup/src/test/java/it/gr/krypta/backup/data/HiddenPinnedBackupTest.kt",
+   "gradle": ":backup:testReleaseUnitTest",
+   "test": "it.gr.krypta.backup.data.HiddenPinnedBackupTest"
+  },
+  "T3": {
+   "dest": "vault/src/test/java/it/gr/krypta/vault/ui/editor/HiddenPasswordGeneratorTest.kt",
+   "gradle": ":vault:testReleaseUnitTest",
+   "test": "it.gr.krypta.vault.ui.editor.HiddenPasswordGeneratorTest"
+  }
+ },
+ "C": {
+  "T1": {
+   "dest": "app/src/test/java/it/gr/krypta/vault/ui/list/HiddenSortTest.kt",
+   "gradle": ":app:testDevDebugUnitTest",
+   "test": "it.gr.krypta.vault.ui.list.HiddenSortTest"
+  },
+  "T2": {
+   "dest": "app/src/test/java/it/gr/krypta/backup/data/HiddenPinnedBackupTest.kt",
+   "gradle": ":app:testDevDebugUnitTest",
+   "test": "it.gr.krypta.backup.data.HiddenPinnedBackupTest"
+  },
+  "T3": {
+   "dest": "app/src/test/java/it/gr/krypta/vault/ui/editor/HiddenPasswordGeneratorTest.kt",
+   "gradle": ":app:testDevDebugUnitTest",
+   "test": "it.gr.krypta.vault.ui.editor.HiddenPasswordGeneratorTest"
+  }
+ }
+}
