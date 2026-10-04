@@ -64,7 +64,7 @@ venv/bin/python harness/plots.py            # charts (needs matplotlib)
 
 `bench.py` uses `/tmp/krypta-bench` as its root; change `B` at the top to move it. Cost is the `total_cost_usd` Claude Code reports (a client-side estimate at list prices). With a subscription the runs consume plan usage instead; the scheduler waits and retries when it hits a usage limit.
 
-## Results (45 runs, all passed every check)
+## Results (45 runs; every run passed the build, the hidden tests and the review)
 
 Median cost per run at list price (Claude Opus 5.5, xhigh effort, Claude Code 2.1.289):
 
@@ -74,8 +74,11 @@ Median cost per run at list price (Claude Opus 5.5, xhigh effort, Claude Code 2.
 | T2 pinned entries (crosses layers) | $1.89 | $1.57 | $1.25 |
 | T3 password generator | $2.20 | $1.27 | $1.32 |
 
-- A to B (context only): cheaper on every task, all five runs below all five on A (Mann-Whitney p = 0.008 per task); pooled ratio 0.63 (95% CI 0.59-0.72).
-- B to C (structure): 20% cheaper on T2 (p = 0.008), no difference on T1 and T3; pooled ratio 0.96 (0.86-1.05).
-- The gap comes from reading: on A the context reached a median 129k tokens against 74-75k on B and C, and tool output entering it was 46k tokens against 25k and 23k. More than half of that extra tool output is design-system source code the agent opened (a median 14k tokens per run on A, 1.7k on B, 0.7k on C).
+- A to B (context): median cost x0.62 on T1 (95% bootstrap interval 0.57-0.75), x0.83 on T2 (0.58-0.85), x0.58 on T3 (0.49-0.70). On every task all five B runs cost less than all five A runs (Mann-Whitney p = 0.008, the floor of the test with five runs a side).
+- B to C (structure): x0.80 on T2 (0.72-0.96, no overlap); no detectable difference on T1 (x0.97, 0.87-1.04) or T3 (x1.04, 0.95-1.25).
+- Total spend over the 15 runs of each version: B 0.65 of A, C 0.61 of A.
+- Where it comes from: writing new context to the cache is 45-48% of the cost, re-reading 17-24%, output 28-37%. On A the context reached a median 129k tokens against 74-75k. The long CLAUDE.md costs about $0.20 per run against $0.07 (a fifth of the A-to-B saving); the rest is less reading: design-system source 14k tokens per run on A against 1.7k plus about 6k of index on B, and Krypta's own code about 22k against 14k (tool output estimated at four characters per token).
+
+Limits: one app, one model, three tasks (one crossing layers), five runs each; the B context was written after the tasks were fixed, which can favor B and C over A but not C over B. Details in the article.
 
 The source code of the app is not published; `results/` holds numbers only (no transcripts, diffs or file paths).
